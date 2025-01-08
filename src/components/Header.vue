@@ -1,16 +1,25 @@
 <script setup>
-function showMenu() {
-  const menu = document.querySelector("#menu");
-  if (!menu) {
-    return;
-  }
+import { ref, onMounted, onUnmounted } from "vue";
 
-  if (menu.classList.contains("hidden")) {
-    menu.classList.remove("hidden");
-  } else {
-    menu.classList.add("hidden");
+const isMenuOpen = ref(false);
+
+function showMenu() {
+  isMenuOpen.value = !isMenuOpen.value;
+}
+
+function outsideClickHandler(event) {
+  if (!event.target.closest("#menu") && !event.target.closest("#burger")) {
+    isMenuOpen.value = false;
   }
 }
+
+onMounted(() => {
+  window.addEventListener("click", outsideClickHandler);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("click", outsideClickHandler);
+});
 </script>
 
 <template>
@@ -42,14 +51,12 @@ function showMenu() {
         </div>
         <nav class="hidden md:block">
           <ul class="flex space-x-4">
-            <li class="btn mt-3">
-              <span>Menu 1</span>
-            </li>
-            <li class="btn mt-3">
-              <span>Menu 2</span>
-            </li>
-            <li class="btn mt-3">
-              <span>Menu 3</span>
+            <li
+              v-for="(item, index) in ['Menu 1', 'Menu 2', 'Menu 3']"
+              :key="item"
+              class="btn"
+            >
+              <span>{{ item }}</span>
             </li>
           </ul>
         </nav>
@@ -58,17 +65,26 @@ function showMenu() {
   </header>
   <nav
     id="menu"
-    class="absolute right-0 hidden overflow-clip rounded-b-md bg-gray-800 px-4 pb-4 text-white transition delay-150 ease-in-out md:space-x-4"
+    class="absolute right-0 transform transition-all duration-500 ease-in-out md:hidden"
+    :class="[
+      isMenuOpen
+        ? 'pointer-events-auto translate-y-0 opacity-100'
+        : 'pointer-events-none -translate-y-2 opacity-0',
+    ]"
   >
-    <ul>
-      <li class="btn mt-3">
-        <span>Menu 1</span>
-      </li>
-      <li class="btn mt-3">
-        <span>Menu 2</span>
-      </li>
-      <li class="btn mt-3">
-        <span>Menu 3</span>
+    <ul class="rounded-b-md bg-gray-800 px-4 pb-5 text-white md:space-x-4">
+      <li
+        v-for="(item, index) in ['Menu 1', 'Menu 2', 'Menu 3']"
+        :key="item"
+        class="btn transition-all duration-300"
+        :class="{ 'mt-4': index > 0 }"
+        :style="{
+          transform: isMenuOpen ? 'translateY(0)' : 'translateY(-10px)',
+          opacity: isMenuOpen ? '1' : '0',
+          transitionDelay: `${index * 100}ms`,
+        }"
+      >
+        <span>{{ item }}</span>
       </li>
     </ul>
   </nav>
